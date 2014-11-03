@@ -1,0 +1,23 @@
+{
+   "browser_action": {
+      "default_icon": "icon32.png",
+      "default_popup": "popup.html",
+      "default_title": "__MSG_extname__"
+   },
+   "content_scripts": [ {
+      "js": [ "zepto.min.js", "script.js" ],
+      "matches": [ "*://*/*" ],
+      "run_at": "document_end"
+   } ],
+   "default_locale": "zh_CN",
+   "icons": {
+      "128": "icon128.png",
+      "32": "icon32.png",
+      "64": "icon64.png"
+   },
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDF4PL492xDDwVRYif1zsGI2bY7fwoq9brO5bXAPfnWXOhIIRlFlYy5KOl1dMETqfmgFMm+L3O0KxMVrjSUz7/waeOORWOa8yBUIa0yoqILXvTNzK85CNifcV/C5BAvs+Ng/P+L10+UVj+TPe9o8erHDsd1dt+IN+auE84p/6pQEwIDAQAB",
+   "name": "__MSG_extname__",
+   "permissions": ["management", "tabs"],
+   "update_url": "http://clients2.google.com/service/update2/crx",
+   "version": "1.3.3.9"
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>__MSG_extname__</title>
+</head>
+<style>
+/** 清除内外边距 **/
+body, h1, h2, h3, h4, h5, h6, hr, p, blockquote, /* structural elements 结构元素 */
+dl, dt, dd, ul, ol, li, /* list elements 列表元素 */
+pre, /* text formatting elements 文本格式元素 */
+form, fieldset, legend, button, input, textarea, /* form elements 表单元素 */
+th, td /* table elements 表格元素 */ {
+    margin: 0;
+    padding: 0;
+}
+
+/** 设置默认字体 **/
+body,
+button, input, select, textarea /* for ie */ {
+    font: 12px/1.5 tahoma, arial, \5FAE\8F6F\96C5\9ED1, \5b8b\4f53, sans-serif;
+}
+h1, h2, h3, h4, h5, h6 { font-size: 100%; }
+address, cite, dfn, em, var { font-style: normal; } /* 将斜体扶正 */
+code, kbd, pre, samp { font-family: courier new, courier, monospace; } /* 统一等宽字体 */
+small { font-size: 12px; } /* 小于 12px 的中文很难阅读，让 small 正常化 */
+
+/** 重置列表元素 **/
+ul, ol { list-style: none; }
+
+/** 重置文本格式元素 **/
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+
+body { overflow-x: hidden; }
+ul { width:240px; }
+#onekey{ text-indent:68px;background:url(icon32.png) no-repeat 40px 50%;-webkit-background-size: 22px 22px;}
+#onekey:hover{background-image:url(all.png);background-color:#666666; color: #fff; border-color:#000;}
+ul li { text-indent: 32px; overflow:hidden; border: 1px solid #cccccc; height: 30px; line-height: 30px; margin-top: 3px; cursor: pointer; -webkit-border-radius: 4px;}
+
+.enabled { background:url(enabled.png) no-repeat 6px 50%; -webkit-background-size: 16px 16px; -webkit-transition: all 0.3s ease-in-out;}
+.enabled:hover{ background:url(disabled.png) no-repeat 6px 50% #666666; color: #fff; border-color:#000; -webkit-background-size: 16px 16px; -webkit-transition: all 0.3s ease-in-out;}
+
+.disabled { background:url(disabled.png) no-repeat 6px 50% #666666; color: #fff; border: 1px solid #666666; -webkit-background-size: 16px 16px; -webkit-transition: all 0.3s ease-in-out;}
+.disabled:hover { background:url(enabled.png) no-repeat 6px 50%; color: #000; -webkit-background-size: 16px 16px; -webkit-transition: all 0.3s ease-in-out;}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height:10px;
+	background-color: #FFF;
+}
+::-webkit-scrollbar-track-piece  {
+	background-color: #CACFDE;
+	-webkit-border-radius: 5px;
+}
+
+:-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment  {
+	height: 30px;
+	display: block;
+	background-color: #FAA;
+}
+::-webkit-scrollbar-thumb:vertical {
+	height: 50px;
+	background: -webkit-gradient(linear, right top, left top,color-stop(0.0, #F7F8FF),color-stop(1.0, #FFF));
+	border: 1px solid #CACFDE;
+	-webkit-border-radius: 5px;
+}
+</style>
+<body>
+<ul id="extensions_list">
+</ul>
+<script>
+/**
+ * @ 一键禁用所有扩展
+ * @ author: xhowhy
+ * @ xhowhy@gmail.com
+ * @ http://x1989.com
+ */
+window.version_m= "1.3.3";
+if(localStorage["version_m"] != window.version_m){
+    //chrome.tabs.create({selected:true,url:"ad.html"})
+    localStorage["version_m"] = window.version_m;
+    localStorage["enabled"] = 1;
+    localStorage["first_run"] = 1;
+    localStorage["ex_list"] = [];
+}
+
+var enabled = !!parseInt(localStorage["enabled"]);
+var ex_list = [];
+var el = document.getElementById('extensions_list');
+var width = 240;
+var icons = {};
+_list();
+
+el.oncontextmenu = function (e){
+	// if(e.target.nodeName == 'LI' && e.target.id != 'onekey' && confirm(chrome.i18n.getMessage("areyousuretouninstallthis")+e.srcElement.innerHTML+' ?')){
+	// 	chrome.management.uninstall(e.srcElement.id, _list);
+	// }
+
+	if(e.target.nodeName == 'LI' && e.target.id != 'onekey'){
+		openExtensionPage(e.target.id);
+	}
+
+    return false;
+}
+
+function openExtensionPage(id) {
+	var url = 'chrome://extensions/?id=' + id;
+
+	chrome.tabs.create({
+		url: url
+	});
+}
+
+function _list(){
+	chrome.management.getAll(function (result){
+        var len = result.length, i = 0, html = '';
+        el.style.display = "none";
+        //一键禁用|启用按钮
+        html += '<li id="onekey" onclick="'+(enabled ? 'disable_all()' : 'enable_all()')+'">';
+        html += (enabled ? chrome.i18n.getMessage("onekeydisable") : chrome.i18n.getMessage("onekeyenable"))+'</li>';
+        var Apps = [];
+        for(i; i < len; i++){
+            if(result[i].name === chrome.i18n.getMessage("extname")) continue;
+            if(result[i].isApp){
+                Apps.push(result[i]);
+                continue;
+            }
+            var class_name = result[i].enabled ? 'enabled':'disabled',
+                icon = result[i].icons ? result[i].icons[0].url:'default_icon.png',
+                title = result[i].enabled ? chrome.i18n.getMessage("leftclicktodisablethis") : chrome.i18n.getMessage("leftclicktoenablethis"),
+                hover_icon = result[i].enabled ? 'disabled.png' : 'enabled.png';
+            html += '<li class="'+ class_name + '" id="'+ result[i].id +'"';
+            html += ' title="'+ title + chrome.i18n.getMessage("rightclicktouninstallthis") +'"';
+            html += ' style="background-image:url('+ icon +')"';
+            html += ' onmouseover=this.style.backgroundImage="url('+ hover_icon +')"';
+            html += ' onmouseout=this.style.backgroundImage="url('+ icon +')"';
+            html += ' onclick="enable_item(this.id)"';
+            html += '>'+ result[i].name+'</li>';
+        }
+        el.innerHTML = html;
+        el.style.display = "block";
+	});
+	
+	//不再是第一次运行
+	localStorage["first_run"] = false;
+}
+function disable_all(){
+	chrome.management.getAll(function (result){
+		var t1 = new Date().getTime(),
+            t = '',
+            len = result.length;
+		for (var i = 0; i < len; i++){
+            if(result[i].isApp){
+                continue;
+            }
+			if(result[i].enabled && result[i].name != chrome.i18n.getMessage("extname")) {
+				//ex_list.push(result[i].id);
+				t += (result[i].id + '|||');
+				//_list每次回调反而会快 不知道为什么
+				chrome.management.setEnabled(result[i].id, false);
+			}
+		}
+        _list();
+		enabled = false;
+		localStorage["enabled"] = 0;
+		//_list();
+		
+		t = t.substr(0, t.length-3);
+		localStorage["ex_list"] = t;
+		//alert(localStorage["ex_list"])
+		console.log(new Date().getTime() - t1);
+	});
+	
+}
+function enable_all(){
+	var t1 = new Date().getTime();
+	ex_list = localStorage["ex_list"].split('|||');
+    var len = ex_list.length;
+	for (var i = 0; i < len; i++){
+		chrome.management.setEnabled(ex_list[i], true);
+		enabled = true;
+		localStorage["enabled"] = 1;
+	}
+	_list();
+	console.log(new Date().getTime() - t1);
+}
+function enable_item(id){
+	chrome.management.get(id, function (result){
+		chrome.management.setEnabled(result.id, !result.enabled, _list);
+		//如果开启了某扩展 则允许“一键关闭所有扩展”
+		//if(result.enabled == false){
+		//	enabled = true;
+		//	localStorage["enabled"] = 1;
+		//}
+	});
+}
+</script>
+</body>
+</html>
